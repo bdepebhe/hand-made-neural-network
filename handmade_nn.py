@@ -147,6 +147,24 @@ if __name__ == "__main__":
             .all(),\
         "uncorrect sigmoid function behaviour"
 
+    my_first_nn=handmade_nn(5)
+    my_first_nn.add_dense_layer(10, 'tanh')
+    my_first_nn.weights[0] = np.vstack((np.identity(5),np.zeros((5,5))))
+    assert (np.round(my_first_nn.predict([-2,-1,2,3,4]), 8) ==\
+            np.array([[-0.96402758, -0.76159416,  0.96402758,  0.99505475,  0.9993293 ,
+             0.        ,  0.        ,  0.        ,  0.        ,  0.        ]]))\
+            .all(),\
+        "uncorrect tanh function behaviour"
+
+    my_first_nn=handmade_nn(5)
+    my_first_nn.add_dense_layer(10, 'softmax')
+    my_first_nn.weights[0] = np.vstack((np.identity(5),np.zeros((5,5))))
+    assert (np.round(my_first_nn.predict([-2,-1,2,3,4]), 8) ==\
+            np.array([[0.00154535, 0.00420069, 0.08437311, 0.2293499 , 0.62343766,
+            0.01141866, 0.01141866, 0.01141866, 0.01141866, 0.01141866]]))\
+            .all(),\
+        "uncorrect softmax function behaviour"
+
     print ('all tests successfully passed')
 
 
