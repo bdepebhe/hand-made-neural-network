@@ -3,7 +3,7 @@ Personal challenge : re-code all the components of a deep learning algo (weights
 
 The code is inspired by the logic of keras, but is much simpler:
   - less features implemented
-  - handling less tricky exceptions
+  - less checks, exceptions, tricky cases allowed, etc.
   - probably much less computionaly efficient
 
 We first focus on a classical dense neural network, with the following features implemented :
