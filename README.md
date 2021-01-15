@@ -2,6 +2,7 @@
 Personal challenge : re-code all the components of a deep learning algo (weights, biais, backprop, etc) and benchmark it with the same architecture on keras on a typical example
 
 ## The code is inspired by the logic of keras, but is much simpler:
+  - common terminology and workflow (model instanciation, model.add_layer, model.fit, model.predict etc..) but simplified (no .compile method for instance)
   - less features implemented
   - less checks, exceptions, tricky cases allowed, etc.
   - probably much less computionaly efficient
