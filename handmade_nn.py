@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from progressbar import ProgressBar
 
 ## Functions
 
