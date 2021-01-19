@@ -158,28 +158,39 @@ if __name__ == "__main__":
     ## tests for function compute_activation
     #---------------------------------------------------------------------------
 
-    assert (compute_activation([-2,-1,2,3,4],'relu') ==\
-            np.array([[0, 0, 2, 3, 4]]))\
+    assert (compute_activation(np.array([[-1,0], [0, 1], [1, 3]]),
+                               'relu') ==\
+            np.array([[0,0], [0, 1], [1, 3]]))\
             .all(), "uncorrect relu function behaviour"
 
     #---------------------------------------------------------------------------
-    assert (compute_activation([-2,-1,2,3,4],'linear') ==\
-            np.array([[-2, -1, 2, 3, 4]]))\
+    assert (compute_activation(np.array([[-1,0], [0, 1], [1, 3]]),
+                               'linear') ==\
+            np.array([[-1,0], [0, 1], [1, 3]]))\
             .all(), "uncorrect linear function behaviour"
 
     #---------------------------------------------------------------------------
-    assert (np.round(compute_activation([-2,-1,2,3,4],'sigmoid'), decimals= 8) ==\
-            np.array([[0.11920292, 0.26894142, 0.88079708, 0.95257413, 0.98201379]]))\
+    assert (np.round(compute_activation(np.array([[-1,0], [0, 1], [1, 3]]),
+                                        'sigmoid'), decimals= 8) ==\
+            np.array([[0.26894142, 0.5       ],
+                      [0.5       , 0.73105858],
+                      [0.73105858, 0.95257413]]))\
             .all(), "uncorrect sigmoid function behaviour"
 
     #---------------------------------------------------------------------------
-    assert (np.round(compute_activation([-2,-1,2,3,4],'tanh'), decimals= 8) ==\
-            np.array([[-0.96402758, -0.76159416,  0.96402758,  0.99505475,  0.9993293]]))\
+    assert (np.round(compute_activation(np.array([[-1,0], [0, 1], [1, 3]]),
+                                        'tanh'), decimals= 8) ==\
+            np.array([[-0.76159416,  0.        ],
+                      [ 0.        ,  0.76159416],
+                      [ 0.76159416,  0.99505475]]))\
             .all(), "uncorrect tanh function behaviour"
 
     #---------------------------------------------------------------------------
-    assert (np.round(compute_activation([-2,-1,2,3,4],'softmax'), decimals= 8) ==\
-            np.array([[0.00163892, 0.00445504, 0.08948193, 0.24323711, 0.66118700]]))\
+    assert (np.round(compute_activation(np.array([[-1,0], [0, 1], [1, 3]]),
+                                        'softmax'), decimals= 8) ==\
+            np.array([[0.09003057, 0.04201007],
+                      [0.24472847, 0.1141952 ],
+                      [0.66524096, 0.84379473]]))\
             .all(), "uncorrect softmax function behaviour"
 
     #---------------------------------------------------------------------------
