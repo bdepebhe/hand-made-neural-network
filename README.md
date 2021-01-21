@@ -1,4 +1,4 @@
-# hand-made-neural-network
+# handmade-neural-network
 Personal challenge : re-code all the components of a deep learning algo (weights, biais, backprop, etc) and benchmark it with the same architecture on keras on a typical example
 
 ## The code is inspired by the logic of keras, but is much simpler:
