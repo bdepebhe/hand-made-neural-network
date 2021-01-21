@@ -28,7 +28,7 @@ def compute_activation (X, activation_type):
     #raise error if unknown type
     else:
         raise ValueError(f'Unknown activation type {activation_type}.\
-                           Supported types : linear, relu, sigmoid, tanh, softmax')
+Supported types : linear, relu, sigmoid, tanh, softmax')
 
 
 def compute_activation_derivative (layer_output, activation_type):
@@ -55,7 +55,7 @@ def compute_activation_derivative (layer_output, activation_type):
     #raise error if unknown type
     else:
         raise ValueError(f'Unknown activation type {activation_type}.\
-                           Supported types : linear, relu, sigmoid, tanh, softmax')
+Supported types : linear, relu, sigmoid, tanh, softmax')
 
 
 def compute_metric (y, y_pred, metric, loss_derivative=False):
@@ -91,7 +91,7 @@ def compute_metric (y, y_pred, metric, loss_derivative=False):
         raise ValueError('y_pred vector dimension too high. Must be 2 max')
     if y.shape != y_pred.shape:
         raise ValueError(f'unconsistent vectors dimensions during scoring :\
-                           y.shape= {y.shape} and y_pred.shape= {y_pred.shape}')
+y.shape= {y.shape} and y_pred.shape= {y_pred.shape}')
 
     #compute loss funtions (or derivatives if loss_derivative==True)
     if metric == 'mse':
@@ -115,7 +115,7 @@ def compute_metric (y, y_pred, metric, loss_derivative=False):
     elif metric == 'binary_crossentropy':
         if y.shape[1]>1:
             raise ValueError('y vector dimension too high.\
-                              Must be 1 max for binary_crossentropy')
+Must be 1 max for binary_crossentropy')
         if loss_derivative == False:
             return -(y*np.log(y_pred)+(1-y)*np.log(1-y_pred)).mean()
         else:
@@ -125,7 +125,7 @@ def compute_metric (y, y_pred, metric, loss_derivative=False):
     ## TODO ## accuracy, f1-score, recall, etc..
     else:
         raise ValueError(f'Unknown metric {metric}. Supported types :\
-                           mse, mae, categorical_crossentropy, binary_crossentropy')
+mse, mae, categorical_crossentropy, binary_crossentropy')
 
 
 class handmade_nn ():
@@ -135,6 +135,9 @@ class handmade_nn ():
 
         - layers activation functions :
             'linear', 'relu', 'sigmoid', 'tanh', 'softmax'
+
+        - weights initializers : 'ones', 'glorot_uniform'
+        - bias initializers : 'zeros', 'ones'
 
         - loss functions :
             'mse', 'mae', 'binary_crossentropy', 'categorical_crossentropy'
@@ -155,11 +158,12 @@ class handmade_nn ():
     def set_loss (self, loss):
         self.loss = loss
 
-    def add_dense_layer (self, n_neurons, activation_type):
+    def add_dense_layer (self, n_neurons, activation_type,
+                         weights_initializer='glorot_uniform', bias_initializer='zeros'):
         #check if the input_dim is set
         if self.input_dim == 0:
             raise ValueError('input_dim = 0 .\
-                              Use set_input_dim before creating first layer')
+Use set_input_dim before creating first layer')
 
         #get the size of the input os this layer
         if len(self.bias) == 0:
@@ -168,8 +172,23 @@ class handmade_nn ():
             previous_dim=(self.bias[-1].shape[0])
 
         #initialize the layer parameters
-        self.weights.append(np.ones((n_neurons, previous_dim)))
-        self.bias.append(np.zeros(n_neurons))
+        if weights_initializer == 'ones':
+            self.weights.append(np.ones((n_neurons, previous_dim)))
+        elif weights_initializer == 'glorot_uniform':
+            limit = np.square(6 / (n_neurons + previous_dim))
+            self.weights.append(np.random.uniform(-limit, limit, size = (n_neurons, previous_dim)))
+        else:
+            raise ValueError(f'Unknown weights initializer {weights_initializer}.\
+Supported types : ones, glorot_uniform')
+
+        if bias_initializer == 'zeros':
+            self.bias.append(np.zeros(n_neurons))
+        elif bias_initializer == 'ones':
+            self.bias.append(np.ones(n_neurons))
+        else:
+            raise ValueError(f'Unknown bias initializer {bias_initializer}.\
+Supported types : zeros, ones')
+
         self.activation_types.append(activation_type)
         self.n_layers += 1
 
@@ -212,7 +231,7 @@ class handmade_nn ():
             raise ValueError('X vector dimension too high. Must be 2 max')
         if X.shape[1] != self.input_dim:
             raise ValueError(f'Unconsistent number of features. \
-            The network input_dim is {self.input_dim}')
+The network input_dim is {self.input_dim}')
 
         #compute the prediction
         layers_outputs = [X]
@@ -312,7 +331,6 @@ class handmade_nn ():
                     self.weights[layer] -= learning_rate * gradient_weights[layer]
                     self.bias[layer] -= learning_rate * gradient_bias[layer]
             print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
-
 
 
 
@@ -529,7 +547,7 @@ if __name__ == "__main__":
     #---------------------------------------------------------------------------
 
     my_nn = handmade_nn(5)# Empty neural network : just a pass-through for 5-values inputs
-    my_nn.add_dense_layer(3, 'linear')
+    my_nn.add_dense_layer(3, 'linear', weights_initializer='ones')
 
     outputs = my_nn.predict([2,3,2,3,4], keep_hidden_layers=True)
     n_outputs = len(np.array(outputs))
@@ -690,8 +708,8 @@ if __name__ == "__main__":
     #---------------------------------------------------------------------------
 
     my_nn=handmade_nn(input_dim = 2)
-    my_nn.add_dense_layer(2, 'linear')
-    my_nn.add_dense_layer(1, 'linear')
+    my_nn.add_dense_layer(2, 'linear', weights_initializer='ones')
+    my_nn.add_dense_layer(1, 'linear', weights_initializer='ones')
     my_nn.set_loss('mse')
 
     outputs = my_nn.compute_backpropagation(np.array([[1,2],[2,3],[3,4]]), np.array([4,5,6]))
