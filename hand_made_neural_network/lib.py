@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-#from progressbar import ProgressBar
+#from progressbar.bar import ProgressBar
 
 ## Functions
 
@@ -302,7 +302,7 @@ The network input_dim is {self.input_dim}')
         return delta_weights, delta_bias
 
 
-    def fit (self, X, y, loss=None, learning_rate=0.01, batch_size=1, n_epochs=10):
+    def fit (self, X, y, loss=None, learning_rate=0.01, batch_size=1, n_epochs=10, verbose=1):
         '''input X : 2D array or pd DataFrame
                 axis 0 = samples
                 axis 1 = features
@@ -314,13 +314,17 @@ The network input_dim is {self.input_dim}')
         y = np.array(y)
         n_samples = X.shape[0]
         n_minibatches_per_epoch = int(n_samples / batch_size)
-        print(f'initial loss: {self.score(X, y, self.loss)}')
+
+        if verbose>0:
+            print(f'initial loss: {self.score(X, y, self.loss)}')
 
         for epoch_index in range (n_epochs):
-            print(f'beginning epoch n°{epoch_index + 1}')
-            progress_batches = ProgressBar()
+            if verbose>1:
+                print(f'beginning epoch n°{epoch_index + 1}')
+            #progress_batches = ProgressBar()
 
-            for mini_batch_index in progress_batches(range(n_minibatches_per_epoch)):
+            #for mini_batch_index in progress_batches(range(n_minibatches_per_epoch)):
+            for mini_batch_index in range(n_minibatches_per_epoch):
                 gradient_weights, gradient_bias\
                     = self.compute_backpropagation(X[mini_batch_index * batch_size :\
                                                      (mini_batch_index +1) * batch_size],
@@ -330,7 +334,10 @@ The network input_dim is {self.input_dim}')
                 for layer in range(self.n_layers):
                     self.weights[layer] -= learning_rate * gradient_weights[layer]
                     self.bias[layer] -= learning_rate * gradient_bias[layer]
-            print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
+            if verbose>1:
+                print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
+        if verbose==1:
+            print(f'final loss: {self.score(X, y, self.loss)}')
 
 
 
