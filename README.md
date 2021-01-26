@@ -1,4 +1,4 @@
-# hand-made-neural-network
+# handmade-neural-network
 Personal challenge : re-code all the components of a deep learning algo (weights, biais, backprop, etc) and benchmark it with the same architecture on keras on a typical example
 
 ## The code is inspired by the logic of keras, but is much simpler:
@@ -7,7 +7,8 @@ Personal challenge : re-code all the components of a deep learning algo (weights
   - less checks, exceptions, tricky cases allowed, etc.
   - probably much less computionaly efficient
 
-## We first focus on a classical dense neural network, with the following features implemented :
+## We first focus on a classical dense neural network
+## The following features are implemented :
   - 5 activation functions:
     - relu, tanh (mostly for hidden layers)
     - linear (for regression output)
@@ -22,8 +23,8 @@ Personal challenge : re-code all the components of a deep learning algo (weights
     - adjustable learning rate
     - without momentum
   - metric computation at the end of each batch/epoch for monitoring during training
-    - loss functions
-    - other metrics (accuracy, roc_auc, etc.)
+    - only loss functions
+  - weights and bias initializers : zeros, ones and glorot_uniform only
  
 ## To be coded later :
   - regularization:
@@ -33,13 +34,15 @@ Personal challenge : re-code all the components of a deep learning algo (weights
   - early stopping on validation data
   - training history tracking
   - momentum for SGD optimizer
+  - other metrics (accuracy, roc_auc, etc.)
+  - other optimizers
+    - adam
   
 ## To be coded much later :
   - dropout
   - regularization on biais and activity of the neurons
   - other optimizers
     - rmsprop
-    - adam
   
 ## To be never coded :
   - padding
