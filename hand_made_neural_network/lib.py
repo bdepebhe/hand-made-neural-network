@@ -302,13 +302,26 @@ The network input_dim is {self.input_dim}')
         return delta_weights, delta_bias
 
 
-    def fit (self, X, y, loss=None, learning_rate=0.01, batch_size=1, n_epochs=10, verbose=1):
+
+    def fit (self, X, y, loss=None, learning_rate=0.01,
+             batch_size=1, n_epochs=10, verbose=1,
+             optimizer='sgd',
+             alpha_init=0.001, beta_1=0.9,
+             beta_2=0.999, epsilon=1e-8):
         '''input X : 2D array or pd DataFrame
                 axis 0 = samples
                 axis 1 = features
         '''
         if loss:
             self.loss=loss
+
+        if optimizer == 'adam':
+            t=0
+            #initializing first and second momentum
+            m_weights = [np.zeros_like(w) for w in self.weights]
+            m_bias = [np.zeros_like(b) for b in self.bias]
+            v_weights = m_weights.copy()
+            v_bias = m_bias.copy()
 
         X = np.array(X)
         y = np.array(y)
@@ -321,19 +334,44 @@ The network input_dim is {self.input_dim}')
         for epoch_index in range (n_epochs):
             if verbose>1:
                 print(f'beginning epoch n°{epoch_index + 1}')
-            #progress_batches = ProgressBar()
 
+            #progress_batches = ProgressBar()
             #for mini_batch_index in progress_batches(range(n_minibatches_per_epoch)):
-            for mini_batch_index in range(n_minibatches_per_epoch):
-                gradient_weights, gradient_bias\
-                    = self.compute_backpropagation(X[mini_batch_index * batch_size :\
+
+                for mini_batch_index in range(n_minibatches_per_epoch):
+                    gradient_weights, gradient_bias\
+                        = self.compute_backpropagation(X[mini_batch_index * batch_size :\
                                                      (mini_batch_index +1) * batch_size],
                                                    y[mini_batch_index * batch_size :\
                                                      (mini_batch_index +1) * batch_size])
-                # updates weights and bias
-                for layer in range(self.n_layers):
-                    self.weights[layer] -= learning_rate * gradient_weights[layer]
-                    self.bias[layer] -= learning_rate * gradient_bias[layer]
+                    if optimizer == 'sgd':
+                        # updating weights and bias
+                        self.weights = [w - learning_rate * grad for w, grad in zip(self.weights, gradient_weights)]
+                        self.bias = [b - learning_rate * grad for b, grad in zip(self.bias, gradient_bias)]
+
+                    elif optimizer == 'adam':
+                        t+=1
+                        alpha=alpha_init*np.sqrt(1-beta_2**t)/(1-beta_1**t)
+
+                        # updating 1st and 2nd momenta
+                        m_weights=[beta_1 * m + (1-beta_1) * grad\
+                                   for m, grad in zip(m_weights, gradient_weights)]
+                        m_bias=[beta_1 * m + (1-beta_1) * grad\
+                                for m, grad in zip(m_bias, gradient_bias)]
+                        v_weights=[beta_2 * v + (1-beta_2) * grad**2\
+                                   for v, grad in zip(v_weights, gradient_weights)]
+                        v_bias=[beta_2 * v + (1-beta_2) * grad**2\
+                                for v, grad in zip(v_bias, gradient_bias)]
+
+                        # updating weights and bias
+                        self.weights=[w - alpha * m / (np.sqrt(v) + epsilon)\
+                                      for w, m, v in zip(self.weights, m_weights, v_weights)]
+                        self.bias=[b - alpha * m / (np.sqrt(v) + epsilon)\
+                                   for b, m, v in zip(self.bias, m_bias, v_bias)]
+
+                    else:
+                        raise ValuError(f'unsupported optimizer type {optimizer}')
+
             if verbose>1:
                 print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
         if verbose==1:
