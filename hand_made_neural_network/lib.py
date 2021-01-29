@@ -127,6 +127,44 @@ Must be 1 max for binary_crossentropy')
         raise ValueError(f'Unknown metric {metric}. Supported types :\
 mse, mae, categorical_crossentropy, binary_crossentropy')
 
+class adam_optimizer():
+    def __init__(self, weights, bias, alpha_init=0.001, beta_1=0.9,
+             beta_2=0.999, epsilon=1e-8):
+
+        self.alpha_init=alpha_init
+        self.beta_1=beta_1
+        self.beta_2=beta_2
+        self.epsilon=epsilon
+
+        self.t=0
+        #initializing first and second momentum
+        self.m_weights = [np.zeros_like(w) for w in weights]
+        self.m_bias = [np.zeros_like(b) for b in bias]
+        self.v_weights = self.m_weights.copy()
+        self.v_bias = self.m_bias.copy()
+
+    def get_update(self, gradient_weights, gradient_bias):
+        self.t+=1
+        alpha=self.alpha_init*np.sqrt(1-self.beta_2**self.t)/(1-self.beta_1**self.t)
+
+        # updating 1st and 2nd momenta
+        self.m_weights=[self.beta_1 * m + (1-self.beta_1) * grad\
+                   for m, grad in zip(self.m_weights, gradient_weights)]
+        self.m_bias=[self.beta_1 * m + (1-self.beta_1) * grad\
+                   for m, grad in zip(self.m_bias, gradient_bias)]
+        self.v_weights=[self.beta_2 * v + (1-self.beta_2) * grad**2\
+                   for v, grad in zip(self.v_weights, gradient_weights)]
+        self.v_bias=[self.beta_2 * v + (1-self.beta_2) * grad**2\
+                   for v, grad in zip(self.v_bias, gradient_bias)]
+
+        #computing the updates
+        weights_update = [- alpha * m / (np.sqrt(v) + self.epsilon)\
+                                  for m, v in zip( self.m_weights, self.v_weights)]
+        bias_update = [- alpha * m / (np.sqrt(v) + self.epsilon)\
+                                  for m, v in zip( self.m_bias, self.v_bias)]
+
+        return weights_update, bias_update
+
 
 class handmade_nn ():
     '''
@@ -305,7 +343,7 @@ The network input_dim is {self.input_dim}')
 
     def fit (self, X, y, loss=None, learning_rate=0.01,
              batch_size=1, n_epochs=10, verbose=1,
-             optimizer='sgd',
+             optimizer_type='sgd',
              alpha_init=0.001, beta_1=0.9,
              beta_2=0.999, epsilon=1e-8):
         '''input X : 2D array or pd DataFrame
@@ -315,13 +353,10 @@ The network input_dim is {self.input_dim}')
         if loss:
             self.loss=loss
 
-        if optimizer == 'adam':
-            t=0
-            #initializing first and second momentum
-            m_weights = [np.zeros_like(w) for w in self.weights]
-            m_bias = [np.zeros_like(b) for b in self.bias]
-            v_weights = m_weights.copy()
-            v_bias = m_bias.copy()
+        if optimizer_type == 'adam':
+            optimizer = adam_optimizer (self.weights, self.bias,
+                                        alpha_init=alpha_init, beta_1=beta_1,
+                                        beta_2=beta_2, epsilon=epsilon)
 
         X = np.array(X)
         y = np.array(y)
@@ -337,40 +372,27 @@ The network input_dim is {self.input_dim}')
 
             #progress_batches = ProgressBar()
             #for mini_batch_index in progress_batches(range(n_minibatches_per_epoch)):
-
-                for mini_batch_index in range(n_minibatches_per_epoch):
-                    gradient_weights, gradient_bias\
-                        = self.compute_backpropagation(X[mini_batch_index * batch_size :\
+            for mini_batch_index in range(n_minibatches_per_epoch):
+                gradient_weights, gradient_bias\
+                    = self.compute_backpropagation(X[mini_batch_index * batch_size :\
                                                      (mini_batch_index +1) * batch_size],
                                                    y[mini_batch_index * batch_size :\
                                                      (mini_batch_index +1) * batch_size])
-                    if optimizer == 'sgd':
-                        # updating weights and bias
-                        self.weights = [w - learning_rate * grad for w, grad in zip(self.weights, gradient_weights)]
-                        self.bias = [b - learning_rate * grad for b, grad in zip(self.bias, gradient_bias)]
+                if optimizer_type == 'sgd':
+                    #compute the update directly
+                    weights_update = [-learning_rate * grad for grad in gradient_weights]
+                    bias_update = [-learning_rate * grad for grad in gradient_bias]
 
-                    elif optimizer == 'adam':
-                        t+=1
-                        alpha=alpha_init*np.sqrt(1-beta_2**t)/(1-beta_1**t)
+                elif optimizer_type == 'adam':
+                    #compute the update with the optimizer
+                    weights_update, bias_update = optimizer.get_update(gradient_weights, gradient_bias)
 
-                        # updating 1st and 2nd momenta
-                        m_weights=[beta_1 * m + (1-beta_1) * grad\
-                                   for m, grad in zip(m_weights, gradient_weights)]
-                        m_bias=[beta_1 * m + (1-beta_1) * grad\
-                                for m, grad in zip(m_bias, gradient_bias)]
-                        v_weights=[beta_2 * v + (1-beta_2) * grad**2\
-                                   for v, grad in zip(v_weights, gradient_weights)]
-                        v_bias=[beta_2 * v + (1-beta_2) * grad**2\
-                                for v, grad in zip(v_bias, gradient_bias)]
+                else:
+                    raise ValueError(f'unsupported optimizer type {optimizer}')
 
-                        # updating weights and bias
-                        self.weights=[w - alpha * m / (np.sqrt(v) + epsilon)\
-                                      for w, m, v in zip(self.weights, m_weights, v_weights)]
-                        self.bias=[b - alpha * m / (np.sqrt(v) + epsilon)\
-                                   for b, m, v in zip(self.bias, m_bias, v_bias)]
-
-                    else:
-                        raise ValuError(f'unsupported optimizer type {optimizer}')
+                # updating weights and bias
+                self.weights = [w + w_update  for w, w_update in zip(self.weights, weights_update)]
+                self.bias = [b + b_update for b, b_update in zip(self.bias, bias_update)]
 
             if verbose>1:
                 print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
@@ -786,7 +808,37 @@ if __name__ == "__main__":
     assert (gradient_bias[0] == np.array([10., 10.])).all(),\
         "using backpropagation: uncorrect gradient with respect to bias"
 
+
     #---------------------------------------------------------------------------
+    ### tests for fit method
+    #---------------------------------------------------------------------------
+
+    my_nn=handmade_nn(input_dim = 2)
+    my_nn.add_dense_layer(1, 'linear',)
+    X= np.ones((10_000, 2))
+    y= np.zeros((10_000,1))
+    my_nn.fit(X,y, loss='mse',optimizer_type='sgd', batch_size=7, n_epochs=2)
+
+    assert my_nn.score(X,y,'mse') < 0.5,\
+        "fit method has not converged with build-in sgd optimizer on a trivial regression"
+
+    #---------------------------------------------------------------------------
+    ### tests for adam optimizer
+    #---------------------------------------------------------------------------
+
+    my_nn=handmade_nn(input_dim = 2)
+    my_nn.add_dense_layer(1, 'linear',)
+    X= np.ones((10_000, 2))
+    y= np.zeros((10_000,1))
+    my_nn.fit(X,y, loss='mse',optimizer_type='adam', batch_size=7, n_epochs=2)
+
+    assert my_nn.score(X,y,'mse') < 0.5,\
+        "not converged with adam optimizer on a trivial regression"
+
+    #---------------------------------------------------------------------------
+
+
+
 
     print ('all tests successfully passed')
 
