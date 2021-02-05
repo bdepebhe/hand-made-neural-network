@@ -190,6 +190,8 @@ class handmade_nn ():
         self.input_dim=input_dim
         self.n_layers=0
 
+        self.loss_history=[]
+
     def set_input_dim (self, input_dim):
         self.input_dim = input_dim
 
@@ -363,6 +365,10 @@ The network input_dim is {self.input_dim}')
         n_samples = X.shape[0]
         n_minibatches_per_epoch = int(n_samples / batch_size)
 
+        loss=self.score(X, y, self.loss)
+        if self.loss_history == []:
+            self.loss_history.append(loss)
+
         if verbose>0:
             print(f'initial loss: {self.score(X, y, self.loss)}')
 
@@ -388,16 +394,24 @@ The network input_dim is {self.input_dim}')
                     weights_update, bias_update = optimizer.get_update(gradient_weights, gradient_bias)
 
                 else:
-                    raise ValueError(f'unsupported optimizer type {optimizer}')
+                    raise ValueError(f'unsupported optimizer type {optimizer_type}')
 
                 # updating weights and bias
                 self.weights = [w + w_update  for w, w_update in zip(self.weights, weights_update)]
                 self.bias = [b + b_update for b, b_update in zip(self.bias, bias_update)]
 
+            loss=self.score(X, y, self.loss)
+            self.loss_history.append(loss)
+
             if verbose>1:
                 print(f'end of epoch n°{epoch_index + 1}. loss: {self.score(X, y, self.loss)}')
         if verbose==1:
             print(f'final loss: {self.score(X, y, self.loss)}')
+
+    def plot_loss_history(self):
+        import seaborn as sns
+        graph=sns.lineplot(x=range(len(self.loss_history)),y=self.loss_history)
+        graph.set(xlabel="epochs", ylabel = "loss")
 
 
 
