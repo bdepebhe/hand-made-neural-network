@@ -1,3 +1,4 @@
+'''setup file of the package'''
 
 import setuptools
 
@@ -12,8 +13,10 @@ setuptools.setup(
     description='Personal deep learning implementation inspired by keras',
     long_description=long_description,
     long_description_content_type='text/markdown',
-    #url='https://github.com/bdepebhe/handmade-neural-network.git',
-    packages=setuptools.find_packages(),
+    url='https://github.com/bdepebhe/handmade-neural-network',
+    packages=[
+        'hmnn',
+    ],
     classifiers=[
         'Programming Language :: Python :: 3',
         'License :: OSI Approved :: MIT License',
