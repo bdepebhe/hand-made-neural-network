@@ -25,6 +25,9 @@ Personal challenge : re-code all the components of a deep learning algo (weights
   - metric computation at the end of each batch/epoch for monitoring during training
     - only loss functions
   - weights and bias initializers : zeros, ones and glorot_uniform only
+  - training history tracking and easy plotting
+  - other optimizers
+    - adam
  
 ## To be coded later :
   - regularization:
@@ -32,11 +35,10 @@ Personal challenge : re-code all the components of a deep learning algo (weights
      - on kernels (weights)
 
   - early stopping on validation data
-  - training history tracking
   - momentum for SGD optimizer
   - other metrics (accuracy, roc_auc, etc.)
   - other optimizers
-    - adam
+    - some others ?
   
 ## To be coded much later :
   - dropout
@@ -44,7 +46,7 @@ Personal challenge : re-code all the components of a deep learning algo (weights
   - other optimizers
     - rmsprop
   
-## To be never coded :
+## To be never coded ? :
   - padding
   - CNN specifics:
     - conv2D layers
